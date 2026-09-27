@@ -1,0 +1,4 @@
+claude-tag-plugins
+Copyright 2026 Anthropic PBC
+
+This product includes software developed by Anthropic (https://www.anthropic.com/).
