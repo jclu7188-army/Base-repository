@@ -1,0 +1,22 @@
+{
+  "name": "base-repository",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Base repository with Claude Code skills and browser automation tooling (Playwright, headless Chrome, Chrome DevTools MCP).",
+  "scripts": {
+    "browser:check": "node scripts/browser/check.cjs",
+    "browser:chrome": "bash scripts/browser/chrome-launch.sh",
+    "browser:stop": "bash scripts/browser/chrome-stop.sh",
+    "browser:path": "bash scripts/browser/resolve-chrome.sh",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/mcp": "0.0.82",
+    "@playwright/test": "1.56.1",
+    "chrome-devtools-mcp": "1.10.1",
+    "playwright": "1.56.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

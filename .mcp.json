@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "bash",
+      "args": ["${CLAUDE_PROJECT_DIR:-.}/scripts/browser/chrome-devtools-mcp.sh"]
+    },
+    "playwright": {
+      "command": "bash",
+      "args": ["${CLAUDE_PROJECT_DIR:-.}/scripts/browser/playwright-mcp.sh"]
+    }
+  }
+}
