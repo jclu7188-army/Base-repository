@@ -1,0 +1,22 @@
+# Python dependencies used by the project skills in .claude/skills/.
+# Installed by .claude/hooks/session-start.sh; run `pip install -r requirements-skills.txt` locally.
+
+# docx / pptx / xlsx / pdf skills
+python-docx
+python-pptx
+openpyxl
+pandas
+pypdf
+pdfplumber
+reportlab
+lxml
+defusedxml
+Pillow
+markitdown[docx,pptx,xlsx]
+# markitdown -> pdfminer imports cryptography; the distro copy lacks a working _cffi_backend
+cffi
+cryptography
+
+# webapp-testing / playwright skills (pin the minor to the Node package in package.json so both
+# find the same Chromium build under PLAYWRIGHT_BROWSERS_PATH)
+playwright==1.56.0

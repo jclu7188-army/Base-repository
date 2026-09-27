@@ -67,15 +67,20 @@ start of each web session.
 
 ## Runtime dependencies
 
-The skills call helper scripts that need tools installed in the session. See each
-`SKILL.md` for details. Common ones:
+None of the skills' libraries are preinstalled in a fresh Claude Code web container (the Office
+skills' SKILL.md files assume they are). `.claude/hooks/session-start.sh` installs them at the
+start of each web session, and `npm run skills:deps` runs the same script on demand:
 
-- Python: `python-docx`, `openpyxl`, `python-pptx`, `pypdf`, `pdfplumber`, `reportlab`, `pytesseract`, `pdf2image`
-- Node: `docx`, `pptxgenjs`
-- System: LibreOffice (`soffice`), `pdftotext`/`qpdf` (poppler), `tesseract`
+- Node (`package.json`): `docx`, `pptxgenjs`, `playwright`, `@playwright/test`,
+  `chrome-devtools-mcp`, `@playwright/mcp`
+- Python (`requirements-skills.txt`): `python-docx`, `python-pptx`, `openpyxl`, `pandas`,
+  `pypdf`, `pdfplumber`, `reportlab`, `lxml`, `defusedxml`, `Pillow`, `markitdown`, `cffi`,
+  `cryptography`, `playwright`
+- System (apt, root only): `libreoffice-writer`, `libreoffice-calc`, `libreoffice-impress`
+  (the `libreoffice-core` package alone cannot convert documents, which breaks docx/pptx
+  rendering and the xlsx `recalc.py` step), `poppler-utils`, `pandoc`, `qpdf`
 - Google skills' scripts: `curl`, `jq`, `base64` (coreutils)
-- Browser skills: Node 20+, `npm install` at the repo root, a Chrome/Chromium binary
-  (Playwright's cache or `CHROME_PATH`), Python `playwright` for `webapp-testing`
+- Browser skills: a Chrome/Chromium binary (Playwright's cache or `CHROME_PATH`)
 
 ## Updating
 

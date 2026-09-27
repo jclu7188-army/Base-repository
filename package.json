@@ -8,13 +8,16 @@
     "browser:chrome": "bash scripts/browser/chrome-launch.sh",
     "browser:stop": "bash scripts/browser/chrome-stop.sh",
     "browser:path": "bash scripts/browser/resolve-chrome.sh",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "skills:deps": "bash .claude/hooks/session-start.sh --force"
   },
   "devDependencies": {
     "@playwright/mcp": "0.0.82",
     "@playwright/test": "1.56.1",
     "chrome-devtools-mcp": "1.10.1",
-    "playwright": "1.56.1"
+    "docx": "9.7.2",
+    "playwright": "1.56.1",
+    "pptxgenjs": "4.0.1"
   },
   "engines": {
     "node": ">=20"

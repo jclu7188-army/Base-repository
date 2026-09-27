@@ -26,8 +26,10 @@ network, console, a11y snapshots). Claude Code asks to approve project servers o
 an interactive session; cloud sessions load them without prompting.
 
 `.claude/hooks/session-start.sh` runs at the start of each Claude Code web session: it runs
-`npm install` if needed, installs Python Playwright, exports `CHROME_PATH`, and proves Chromium
-launches. Outputs go to `.browser-out/` (git-ignored).
+`npm install` if needed, installs the Python packages in `requirements-skills.txt`, installs the
+system tools the Office and PDF skills need (LibreOffice writer/calc/impress, poppler, pandoc,
+qpdf), exports `CHROME_PATH`, and proves Chromium launches. `npm run skills:deps` runs the same
+script on demand. Outputs go to `.browser-out/` (git-ignored).
 
 ### Claude in Chrome (the browser extension)
 
