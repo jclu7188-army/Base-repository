@@ -17,6 +17,7 @@ See [`.claude/skills/README.md`](.claude/skills/README.md) for the list, sources
 | `npm run browser:check` | Launches Chromium headless, prints its version, writes `.browser-out/check.png`. |
 | `npm run browser:chrome` | Starts headless Chrome with the DevTools protocol on `127.0.0.1:9222` (profile in `.chrome-profile/`). `-- --port N`, `-- --headed`, `-- --url URL`. |
 | `npm run browser:stop` | Stops it. |
+| `npm run browser:trust-ca` | Imports the sandbox proxy's TLS-interception CA into Chromium's NSS store so `https://` pages load. Run by the hook; `BROWSER_IGNORE_HTTPS_ERRORS=1` is the fallback. |
 | `npm run test:e2e` | Runs the `@playwright/test` suite in `e2e/` (`BASE_URL=…` to target a running app). |
 | `node .claude/skills/playwright/scripts/browse.cjs text URL` | One-shot page text / html / links / screenshot / pdf / eval in real Chromium. |
 

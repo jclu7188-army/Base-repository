@@ -54,5 +54,8 @@ else
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD= npx playwright install chromium || echo "warning: chromium install failed" >&2
 fi
 
-# 5. prove chromium launches (2 seconds); failure is reported but does not block the session.
+# 5. let chromium trust the tls-intercepting proxy (curl/node/python already do via env vars)
+bash scripts/browser/trust-proxy-ca.sh || echo "warning: could not import the proxy CA into the NSS store" >&2
+
+# 6. prove chromium launches (2 seconds); failure is reported but does not block the session.
 node scripts/browser/check.cjs || echo "warning: chromium launch check failed" >&2

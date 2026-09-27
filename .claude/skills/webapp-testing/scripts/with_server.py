@@ -18,6 +18,8 @@ import subprocess
 import socket
 import time
 import sys
+import os
+import signal
 import argparse
 
 def is_server_ready(port, timeout=30):
@@ -65,12 +67,15 @@ def main():
         for i, server in enumerate(servers):
             print(f"Starting server {i+1}/{len(servers)}: {server['cmd']}")
 
-            # Use shell=True to support commands with cd and &&
+            # Use shell=True to support commands with cd and &&.
+            # start_new_session puts the shell and everything it spawns in their own process
+            # group, so cleanup can stop the real server, not just the wrapper shell.
             process = subprocess.Popen(
                 server['cmd'],
                 shell=True,
                 stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
+                stderr=subprocess.PIPE,
+                start_new_session=True
             )
             server_processes.append(process)
 
@@ -92,11 +97,18 @@ def main():
         # Clean up all servers
         print(f"\nStopping {len(server_processes)} server(s)...")
         for i, process in enumerate(server_processes):
+            # Signal the whole process group (shell + server), falling back to the shell alone.
+            def signal_group(sig):
+                try:
+                    os.killpg(os.getpgid(process.pid), sig)
+                except (ProcessLookupError, PermissionError, OSError):
+                    if process.poll() is None:
+                        process.send_signal(sig)
             try:
-                process.terminate()
+                signal_group(signal.SIGTERM)
                 process.wait(timeout=5)
             except subprocess.TimeoutExpired:
-                process.kill()
+                signal_group(signal.SIGKILL)
                 process.wait()
             print(f"Server {i+1} stopped")
         print("All servers stopped")

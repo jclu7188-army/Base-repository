@@ -6,10 +6,11 @@
   "scripts": {
     "browser:check": "node scripts/browser/check.cjs",
     "browser:chrome": "bash scripts/browser/chrome-launch.sh",
-    "browser:stop": "bash scripts/browser/chrome-stop.sh",
     "browser:path": "bash scripts/browser/resolve-chrome.sh",
-    "test:e2e": "playwright test",
-    "skills:deps": "bash .claude/hooks/session-start.sh --force"
+    "browser:stop": "bash scripts/browser/chrome-stop.sh",
+    "browser:trust-ca": "bash scripts/browser/trust-proxy-ca.sh",
+    "skills:deps": "bash .claude/hooks/session-start.sh --force",
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
     "@playwright/mcp": "0.0.82",

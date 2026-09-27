@@ -12,6 +12,7 @@
 //   common: --wait STATE (default networkidle) --timeout MS (default 30000) --ua STRING
 //           --cookie NAME=VALUE (repeatable, set for the url's host) --header K:V (repeatable)
 //           --console (print console messages to stderr)  --cdp http://127.0.0.1:9222 (attach)
+//           --insecure (ignore tls certificate errors; or set BROWSER_IGNORE_HTTPS_ERRORS=1)
 const path = require('path');
 // resolve playwright from the repository root (four levels up), the cwd, or a global install
 const repoRoot = path.resolve(__dirname, '..', '..', '..', '..');
@@ -36,6 +37,7 @@ function parse(argv) {
       case '--header': { const h = next(); const k = h.slice(0, h.indexOf(':')); o.headers[k.trim()] = h.slice(k.length + 1).trim(); break; }
       case '--console': o.console = true; break;
       case '--cdp': o.cdp = next(); break;
+      case '--insecure': o.insecure = true; break;
       default: o.positional.push(a);
     }
   }
@@ -58,6 +60,7 @@ async function main() {
     const ctx = await browser.newContext({
       viewport: { width: o.width || 1280, height: o.height || 800 },
       userAgent: o.ua, extraHTTPHeaders: o.headers,
+      ignoreHTTPSErrors: !!(o.insecure || process.env.BROWSER_IGNORE_HTTPS_ERRORS),
     });
     if (o.cookies.length) {
       const host = new URL(o.url);

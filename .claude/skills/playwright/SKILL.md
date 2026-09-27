@@ -19,10 +19,22 @@ description: Browser automation and end-to-end testing with Playwright in this r
 | Sanity check | `npm run browser:check` | Launches Chromium, prints version, writes `.browser-out/check.png`. |
 | One-shot CLI | `scripts/browse.cjs` (this skill) | `text`, `html`, `links`, `screenshot`, `pdf`, `eval` — see below. |
 | Long-lived Chrome with DevTools port | `npm run browser:chrome` / `browser:stop` | Then `connectOverCDP('http://127.0.0.1:9222')`. See the `chrome-devtools` skill. |
+| Proxy CA trust for HTTPS | `npm run browser:trust-ca` (the SessionStart hook runs it) | Imports the environment's TLS-intercepting proxy CA into `~/.pki/nssdb`, which Chromium reads. Without it every `https://` load fails with `net::ERR_CERT_AUTHORITY_INVALID`. |
 | MCP servers | `.mcp.json` → `playwright`, `chrome-devtools` | Tool-driven browsing (`browser_navigate`, `browser_snapshot`, …) without writing code. |
 
-Headless only: there is no display in a cloud container. `--no-sandbox` is required when running
-as root (the config and scripts add it). Outputs belong in `.browser-out/` (git-ignored).
+Headless only: there is no display in a cloud container. Raw Chrome refuses to start as root
+without `--no-sandbox` (the launcher adds it); Playwright's own `chromium.launch()` copes without
+it, and the config and scripts pass it anyway. Outputs belong in `.browser-out/` (git-ignored).
+
+**HTTPS through the sandbox proxy.** Outbound HTTPS is intercepted by a proxy with its own CA.
+curl, Node and Python trust it through environment variables; Chromium only trusts what is in
+its NSS store. The hook imports the CA (`npm run browser:trust-ca`), after which `https://`
+pages load normally. If you still see `net::ERR_CERT_AUTHORITY_INVALID` (fresh container, hook
+not run), run that command, or fall back to ignoring certificate errors:
+`browse.cjs … --insecure`, `BROWSER_IGNORE_HTTPS_ERRORS=1` (honoured by `playwright.config.ts`,
+both MCP wrappers and `chrome-launch.sh`), or `newContext({ ignoreHTTPSErrors: true })` in a
+script. Raw Chrome from the launcher also upgrades `http://` to `https://` (HttpsUpgrades), so an
+untrusted CA shows up there as `net::ERR_BLOCKED_BY_CLIENT` on plain-http URLs.
 
 ## Quick answers with `scripts/browse.cjs`
 
@@ -42,7 +54,8 @@ node $S/browse.cjs eval https://example.com "JSON.stringify(performance.timing)"
 
 Options: `--wait load|domcontentloaded|networkidle`, `--timeout MS`, `--width/--height`,
 `--ua STRING`, `--header "K: V"`, `--cookie name=value`, `--console` (echo console messages),
-`--cdp http://127.0.0.1:9222` (use an already-running Chrome instead of launching one).
+`--cdp http://127.0.0.1:9222` (use an already-running Chrome instead of launching one),
+`--insecure` (ignore TLS certificate errors).
 Anything interactive (clicking, typing, multi-step) → write a script instead.
 
 ## Writing a script (Node)
@@ -117,6 +130,8 @@ inspect what an MCP server or another tool is doing. Stop it with `npm run brows
    (`npm ls playwright`) or set `CHROME_PATH`.
 3. "Running as root without --no-sandbox": add `args: ['--no-sandbox']` (already in the config
    and scripts).
+5. `net::ERR_CERT_AUTHORITY_INVALID` on every HTTPS site: the proxy CA is not in Chromium's NSS
+   store — `npm run browser:trust-ca`, or the fallbacks under "HTTPS through the sandbox proxy".
 4. Missing shared libraries (`libnss3`, `libatk`): `npx playwright install-deps chromium` needs
    root and apt access.
 

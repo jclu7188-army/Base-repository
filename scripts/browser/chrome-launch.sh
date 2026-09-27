@@ -60,6 +60,7 @@ flags=(
 $headed || flags+=(--headless=new --disable-gpu --window-size=1280,800)
 # containers usually run as root without user namespaces: chrome refuses to start unless told so
 if [[ "$(id -u)" == "0" ]]; then flags+=(--no-sandbox); fi
+[[ -n "${BROWSER_IGNORE_HTTPS_ERRORS:-}" ]] && flags+=(--ignore-certificate-errors)
 [[ -n "${CHROME_EXTRA_FLAGS:-}" ]] && read -r -a envflags <<<"$CHROME_EXTRA_FLAGS" && flags+=("${envflags[@]}")
 
 nohup "$chrome" "${flags[@]}" "${extra[@]}" "$url" >"$log" 2>&1 &

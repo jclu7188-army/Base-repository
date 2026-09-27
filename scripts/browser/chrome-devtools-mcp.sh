@@ -11,5 +11,7 @@ if [[ "$*" != *--browserUrl* && "$*" != *--wsEndpoint* ]]; then
   chrome=$(bash "$root/scripts/browser/resolve-chrome.sh")
   args+=(--executablePath "$chrome" --headless --isolated)
   [[ "$(id -u)" == "0" ]] && args+=(--chromeArg=--no-sandbox)
+  # --acceptInsecureCerts fails through an intercepting proxy (ERR_TOO_MANY_RETRIES); the chrome flag works
+  [[ -n "${BROWSER_IGNORE_HTTPS_ERRORS:-}" ]] && args+=(--chromeArg=--ignore-certificate-errors)
 fi
 exec "$bin" "${args[@]}" "$@"

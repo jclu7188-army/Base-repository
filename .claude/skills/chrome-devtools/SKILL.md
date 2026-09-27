@@ -51,7 +51,8 @@ await page.goto('https://example.com');
 const { metrics } = await cdp.send('Performance.getMetrics');
 ```
 
-Attach with Puppeteer (`puppeteer-core` is installed transitively):
+Attach with Puppeteer (not installed; `npm install puppeteer-core` first — the DevTools MCP
+server bundles its own copy):
 
 ```js
 const puppeteer = require('puppeteer-core');
@@ -76,18 +77,23 @@ Chrome. Once approved, load its tools with ToolSearch (`mcp__chrome-devtools__`)
 | Network | `list_network_requests`, `get_network_request` |
 | Performance | `performance_start_trace`, `performance_stop_trace`, `performance_analyze_insight` |
 | Emulation | `emulate` (device, network throttling, CPU, geolocation, colour scheme), `resize_page` |
-| Memory (opt-in) | heap snapshot tools, enabled with `--memoryDebugging` |
+| Memory | `take_heapsnapshot` is on by default; the analysis tools (`compare_heapsnapshots`, retainers, dominators…) need `--memoryDebugging` |
 
-Typical loop: `navigate_page` → `take_snapshot` → act on a `uid` → `take_snapshot` again.
+Every page-scoped tool requires a `pageId`. Typical loop: `list_pages` (or `new_page`) to get
+the id → `navigate_page` `{pageId, type: "url", url}` → `take_snapshot` `{pageId}` → act on a
+`uid` → `take_snapshot` again.
 Performance: `performance_start_trace` (with `reload: true`, `autoStop: true`) →
 `performance_stop_trace` → `performance_analyze_insight` for LCP, CLS, long tasks.
 
 Attach the server to a Chrome you started instead of letting it launch one by editing the
 `args` in `.mcp.json` to add `--browserUrl`, `http://127.0.0.1:9222` (the wrapper then skips
 its own launch flags). Other useful server flags: `--viewport 1280x720`, `--slim` (three tools
-only), `--acceptInsecureCerts`, `--proxyServer`, `--logFile`, `--userDataDir` (persistent
-profile), `--categoryPerformance=false` to trim tools, `--experimentalScreencast` (needs
-ffmpeg; Playwright bundles one under `/opt/pw-browsers/ffmpeg-*`).
+only), `--proxyServer`, `--logFile`, `--userDataDir` (persistent profile),
+`--categoryPerformance=false` to trim tools, `--experimentalScreencast` (needs ffmpeg;
+Playwright bundles one under `/opt/pw-browsers/ffmpeg-*`). For an untrusted proxy CA use
+`--chromeArg=--ignore-certificate-errors` (the wrapper adds it when
+`BROWSER_IGNORE_HTTPS_ERRORS` is set); `--acceptInsecureCerts` does not work through this
+proxy (`net::ERR_TOO_MANY_RETRIES`). Better: `npm run browser:trust-ca` once, then no flag.
 
 The `playwright` MCP server in the same file is the Microsoft equivalent
 (`browser_*` tools); pick one per task to keep the tool list small.
@@ -111,6 +117,10 @@ The `playwright` MCP server in the same file is the Microsoft equivalent
 
 ## Troubleshooting
 
+- `net::ERR_CERT_AUTHORITY_INVALID` on HTTPS, or `net::ERR_BLOCKED_BY_CLIENT` / a "Privacy
+  error" tab on plain `http://` (Chrome upgrades it to HTTPS first): Chromium does not trust the
+  sandbox proxy's CA. `npm run browser:trust-ca` fixes it for good; `BROWSER_IGNORE_HTTPS_ERRORS=1`
+  or `npm run browser:chrome -- -- --ignore-certificate-errors` are the quick fallbacks.
 - Port already in use: `chrome-launch.sh` reuses a Chrome that answers `/json/version`;
   otherwise `scripts/browser/chrome-stop.sh PORT`, or pick `--port`.
 - "Failed to launch: running as root without --no-sandbox": the launcher adds it; if launching

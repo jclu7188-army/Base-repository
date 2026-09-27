@@ -32,7 +32,12 @@ Skills in this directory are loaded automatically by Claude Code for this reposi
   (REST recipes, bundled `curl` + `jq` scripts, API reference). Their scripts were tested
   against a local mock of the Google APIs, not against live accounts.
 - `webapp-testing`: copied from https://github.com/anthropics/skills (same commit as the
-  Office skills). Proprietary licence in `LICENSE.txt`.
+  Office skills), Apache-2.0 (`LICENSE.txt`). Local change: `scripts/with_server.py` now starts
+  each server in its own process group and signals the group on cleanup; upstream only killed
+  the wrapper shell, leaving the real server running (the next run then failed with
+  `ERR_EMPTY_RESPONSE`). Caveats: the examples write to `/mnt/user-data/outputs/`, which does
+  not exist here (use `.browser-out/`), and Playwright launches fine as root without
+  `--no-sandbox`, so the examples work unchanged.
 - `chrome-browser`, `built-in-browser`, `computer-use`: Anthropic's bundled browser skills as
   synced into Claude Code sessions (proprietary licence in each `LICENSE.txt`). They describe
   tools that exist only when the matching browser is connected to the session.
@@ -55,6 +60,16 @@ The three Google skills work in two modes:
    secrets rather than a file in the repo.
 
 Without either, the skills stop and say so rather than guessing credentials.
+
+## Test status (2026-09-27, this container)
+
+| Skill | Tested how | Result |
+|-------|-----------|--------|
+| docx, pptx, xlsx, pdf | Created, validated, rendered and edited files via each skill's workflow | Work once dependencies are installed (now done by the hook) |
+| gmail, google-drive-api, google-docs | Live connector tools: search, read, draft (deleted), create Doc from Markdown (trashed), rename, export | Work; REST scripts verified only against a local API mock |
+| playwright, chrome-devtools | browse.cjs over HTTPS, e2e test, Chrome launcher + CDP, both MCP servers over stdio | Work; HTTPS needs the proxy CA trust step the hook now performs |
+| webapp-testing | `with_server.py` + Python Playwright against a static site | Works after the process-group fix above |
+| chrome-browser, built-in-browser, computer-use, claude-in-chrome-setup | Not testable here: they need the user's Chrome or desktop app connected | Documented only |
 
 ## Browser tooling
 

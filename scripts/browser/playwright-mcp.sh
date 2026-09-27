@@ -13,5 +13,6 @@ if [[ "$*" != *--cdp-endpoint* ]]; then
   chrome=$(bash "$root/scripts/browser/resolve-chrome.sh")
   args+=(--executable-path "$chrome" --headless --isolated)
   [[ "$(id -u)" == "0" ]] && args+=(--no-sandbox)
+  [[ -n "${BROWSER_IGNORE_HTTPS_ERRORS:-}" ]] && args+=(--ignore-https-errors)
 fi
 exec "$bin" "${args[@]}" "$@"
